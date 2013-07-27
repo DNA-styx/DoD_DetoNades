@@ -56,10 +56,10 @@ public Plugin:myinfo =
  * --------------------------------------------------------------------------- */
 public OnPluginStart()
 {
-	// Just create plugin ConVars
+	// Simply create plugin ConVars
 	CreateConVar("dod_detonades_version", PLUGIN_VERSION, PLUGIN_NAME, FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	NadesType[frag_grens] = CreateConVar("dod_detonade_frag_grenadess",  "0", "Whether or not detonate frag grenades when it collides with a player",  FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	NadesType[riflegrens] = CreateConVar("dod_detonade_rifle_grenadess", "1", "Whether or not detonate rifle grenades when it collides with a player", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	NadesType[frag_grens] = CreateConVar("dod_detonade_frag_grenades",  "0", "Whether or not detonate frag grenade when it collides with a player",  FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	NadesType[riflegrens] = CreateConVar("dod_detonade_rifle_grenades", "1", "Whether or not detonate rifle grenade when it collides with a player", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 }
 
 /* OnEntityCreated()
@@ -87,7 +87,7 @@ public OnEntityCreated(entity, const String:classname[])
  * --------------------------------------------------------------------------- */
 public OnClientPutInServer(client)
 {
-	// Hook TraceAttack(post) instead of OnTakeDamage
+	// Hook TraceAttack (post) instead of OnTakeDamage
 	SDKHook(client, SDKHook_TraceAttackPost, TraceAttackPost);
 }
 
@@ -97,7 +97,7 @@ public OnClientPutInServer(client)
  * --------------------------------------------------------------------------- */
 public TraceAttackPost(victim, attacker, inflictor, Float:damage, damagetype, ammotype, hitbox, hitgroup)
 {
-	// Check for valid victim and valid inflictor (with custom netprop)
+	// Check for valid victim and valid inflictor (with enabled netprop)
 	if (victim && victim <= MaxClients && inflictor > MaxClients
 	&& (GetEntProp(inflictor, Prop_Send, "m_bIsLive") == 1))
 	{
