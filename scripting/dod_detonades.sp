@@ -33,10 +33,10 @@ enum Grenades
 static NadesType[Grenades],
 String:LiveGrenades[][] =
 {
-	"frag_us",
-	"frag_ger",
-	"riflegren_us",
-	"riflegren_ger"
+	"grenade_frag_us",
+	"grenade_frag_ger",
+	"grenade_riflegren_us",
+	"grenade_riflegren_ger"
 };
 
 // ====[ PLUGIN ]=============================================================
@@ -56,7 +56,7 @@ public Plugin:myinfo =
  * --------------------------------------------------------------------------- */
 public OnPluginStart()
 {
-	// Simply create plugin ConVars
+	// Create plugin ConVars
 	CreateConVar("dod_detonades_version", PLUGIN_VERSION, PLUGIN_NAME, FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	NadesType[frag_grens] = CreateConVar("dod_detonade_frag_grenades",  "0", "Whether or not detonate frag grenade when it collides with a player",  FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	NadesType[riflegrens] = CreateConVar("dod_detonade_rifle_grenades", "1", "Whether or not detonate rifle grenade when it collides with a player", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -68,15 +68,15 @@ public OnPluginStart()
  * --------------------------------------------------------------------------- */
 public OnEntityCreated(entity, const String:classname[])
 {
-	// Skip first 8 characters to avoid comparing with 'grenade_' prefix
-	if (StrEqual(classname[8], LiveGrenades[frag_us])
-	||  StrEqual(classname[8], LiveGrenades[frag_ger])
+	// Skipping first 8 characters to avoid comparing with 'grenade_' prefix is crashing linux servers!!
+	if (StrEqual(classname, LiveGrenades[frag_us])
+	||  StrEqual(classname, LiveGrenades[frag_ger])
 	&&  GetConVarBool(NadesType[frag_grens]) == true)
 	{ SetEntProp(entity, Prop_Send, "m_bIsLive", true); }
 
-	// If plugin should handle rifle grenades - set netprop
-	if (StrEqual(classname[8], LiveGrenades[riflegren_us])
-	||  StrEqual(classname[8], LiveGrenades[riflegren_ger])
+	// Set unused netprop to detonate needed grenade
+	if (StrEqual(classname, LiveGrenades[riflegren_us])
+	||  StrEqual(classname, LiveGrenades[riflegren_ger])
 	&&  GetConVarBool(NadesType[riflegrens]) == true)
 	{ SetEntProp(entity, Prop_Send, "m_bIsLive", true); }
 }
@@ -87,7 +87,7 @@ public OnEntityCreated(entity, const String:classname[])
  * --------------------------------------------------------------------------- */
 public OnClientPutInServer(client)
 {
-	// Hook TraceAttack (post) instead of OnTakeDamage
+	// Hook post TraceAttack for player
 	SDKHook(client, SDKHook_TraceAttackPost, TraceAttackPost);
 }
 
@@ -97,7 +97,7 @@ public OnClientPutInServer(client)
  * --------------------------------------------------------------------------- */
 public TraceAttackPost(victim, attacker, inflictor, Float:damage, damagetype, ammotype, hitbox, hitgroup)
 {
-	// Check for valid victim and valid inflictor (with enabled netprop)
+	// Check for valid victim and valid inflictor
 	if (victim && victim <= MaxClients && inflictor > MaxClients
 	&& (GetEntProp(inflictor, Prop_Send, "m_bIsLive") == 1))
 	{
