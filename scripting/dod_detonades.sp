@@ -8,8 +8,6 @@
 * Changelog & more info at http://goo.gl/4nKhJ
 */
 
-#pragma semicolon 1
-
 #include <sdkhooks>
 
 // ====[ CONSTANTS ]==========================================================
@@ -22,7 +20,7 @@ enum
 	frag_ger,
 	riflegren_us,
 	riflegren_ger
-}
+};
 
 enum Grenades
 {
@@ -47,7 +45,7 @@ public Plugin:myinfo =
 	description = "Detonates a grenade when it collides with a player",
 	version     = PLUGIN_VERSION,
 	url         = "http://dodsplugins.com/"
-};
+}
 
 
 /* OnPluginStart()
@@ -68,17 +66,20 @@ public OnPluginStart()
  * --------------------------------------------------------------------------- */
 public OnEntityCreated(entity, const String:classname[])
 {
-	// Skipping first 8 characters to avoid comparing with 'grenade_' prefix is crashing linux servers!!
 	if (StrEqual(classname, LiveGrenades[frag_us])
 	||  StrEqual(classname, LiveGrenades[frag_ger])
 	&&  GetConVarBool(NadesType[frag_grens]) == true)
-	{ SetEntProp(entity, Prop_Send, "m_bIsLive", true); }
+	{
+		SetEntProp(entity, Prop_Send, "m_bIsLive", true, true);
+	}
 
-	// Set unused netprop to detonate needed grenade
+	// Set unused netprop to check if grenade should detonate in TraceAttack hook
 	if (StrEqual(classname, LiveGrenades[riflegren_us])
 	||  StrEqual(classname, LiveGrenades[riflegren_ger])
 	&&  GetConVarBool(NadesType[riflegrens]) == true)
-	{ SetEntProp(entity, Prop_Send, "m_bIsLive", true); }
+	{
+		SetEntProp(entity, Prop_Send, "m_bIsLive", true, true);
+	}
 }
 
 /* OnClientPutInServer()
@@ -87,7 +88,6 @@ public OnEntityCreated(entity, const String:classname[])
  * --------------------------------------------------------------------------- */
 public OnClientPutInServer(client)
 {
-	// Hook post TraceAttack for player
 	SDKHook(client, SDKHook_TraceAttackPost, TraceAttackPost);
 }
 
@@ -97,12 +97,12 @@ public OnClientPutInServer(client)
  * --------------------------------------------------------------------------- */
 public TraceAttackPost(victim, attacker, inflictor, Float:damage, damagetype, ammotype, hitbox, hitgroup)
 {
-	// Check for valid victim and valid inflictor
-	if (victim && victim <= MaxClients && inflictor > MaxClients
-	&& (GetEntProp(inflictor, Prop_Send, "m_bIsLive") == 1))
+	// Check for valid victim and valid inflictor right now
+	if (1 <= victim <= MaxClients && IsValidEdict(inflictor)
+	&& (bool:GetEntProp(inflictor, Prop_Send, "m_bIsLive", true)))
 	{
 		// This fucking awesome piece of code is brought to you by blodia (c) RedSword
-		// Take a look at https://forums.alliedmods.net/showthread.php?p=1985693#post1985693
+		// See this thread https://forums.alliedmods.net/showthread.php?p=1985693#post1985693
 		SetEntProp(inflictor, Prop_Data, "m_takedamage", 2);
 		SetEntProp(inflictor, Prop_Data, "m_iHealth", 1);
 		SDKHooks_TakeDamage(inflictor, 0, 0, 1.0);
