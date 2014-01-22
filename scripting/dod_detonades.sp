@@ -97,8 +97,8 @@ public OnClientPutInServer(client)
  * --------------------------------------------------------------------------- */
 public TraceAttackPost(victim, attacker, inflictor, Float:damage, damagetype, ammotype, hitbox, hitgroup)
 {
-	// Check for valid victim and valid inflictor right now
-	if (1 <= victim <= MaxClients && IsValidEdict(inflictor)
+	// Check for valid victim and valid inflictor right here
+	if (1 <= victim <= MaxClients && inflictor > MaxClients
 	&& (bool:GetEntProp(inflictor, Prop_Send, "m_bIsLive", true)))
 	{
 		// This fucking awesome piece of code is brought to you by blodia (c) RedSword
